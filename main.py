@@ -4,6 +4,12 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import cmasher as cmr
 from tqdm import tqdm
+from time import sleep
+import platform
+
+if 'darwin' in platform.system():
+    jax.config.update('jax_platform_name', 'cpu')
+
 
 N_ITERATIONS = 15_000
 REYNOLDS_NUMBER = 80
@@ -18,7 +24,7 @@ CYLINDER_RADIUS_INDICES = N_POINTS_Y // 9
 MAX_HORIZONTAL_INFLOW_VELOCITY = 0.04
 
 VISUALIZE = True
-PLOT_EVERY_N_STEPS = 100
+PLOT_EVERY_N_STEPS = 500
 SKIP_FIRST_N_ITERATIONS = 0
 
 N_DISCRETE_VELOCITIES = 9
@@ -87,7 +93,7 @@ def get_equilibrium_discrete_velocities(macroscopic_velocities, density):
 
 
 def main():
-    jax.config.update("jax_enable_x64", True)
+    jax.config.update('jax_enable_x64', True)
 
     kinematic_viscosity = (
             (
@@ -113,7 +119,7 @@ def main():
     # Define a mesh
     x = jnp.arange(N_POINTS_X)
     y = jnp.arange(N_POINTS_Y)
-    X, Y = jnp.meshgrid(x, y, indexing="ij")
+    X, Y = jnp.meshgrid(x, y, indexing='ij')
 
     # Obstacle Mask: An array of the shape like X or Y, but contains True if the
     # point belongs to the obstacle and False if not
@@ -222,10 +228,17 @@ def main():
         jnp.ones((N_POINTS_X, N_POINTS_Y)),
     )
 
-    plt.style.use("dark_background")
+    fig = plt.figure()
+    plt.figure().clear()
+    plt.close()
+    plt.cla()
+    plt.clf()
+
+    plt.style.use('dark_background')
     plt.figure(figsize=(15, 6), dpi=100)
 
     for iteration_index in tqdm(range(N_ITERATIONS)):
+        plt.clf()
         discrete_velocities_next = update(discrete_velocities_prev)
 
         discrete_velocities_prev = discrete_velocities_next
@@ -254,11 +267,11 @@ def main():
                 levels=50,
                 cmap=cmr.amber,
             )
-            plt.colorbar().set_label("Velocity Magnitude")
+            plt.colorbar().set_label('Velocity Magnitude')
             plt.gca().add_patch(plt.Circle(
                 (CYLINDER_CENTER_INDEX_X, CYLINDER_CENTER_INDEX_Y),
                 CYLINDER_RADIUS_INDICES,
-                color="darkgreen",
+                color='darkgreen',
             ))
 
             # Vorticity Magnitude Contour PLot in the bottom
@@ -272,11 +285,11 @@ def main():
                 vmin=-0.02,
                 vmax=0.02,
             )
-            plt.colorbar().set_label("Vorticity Magnitude")
+            plt.colorbar().set_label('Vorticity Magnitude')
             plt.gca().add_patch(plt.Circle(
                 (CYLINDER_CENTER_INDEX_X, CYLINDER_CENTER_INDEX_Y),
                 CYLINDER_RADIUS_INDICES,
-                color="darkgreen",
+                color='darkgreen',
             ))
 
             plt.draw()
@@ -287,5 +300,5 @@ def main():
         plt.show()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
